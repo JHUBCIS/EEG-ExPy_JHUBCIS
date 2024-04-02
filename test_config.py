@@ -6,12 +6,12 @@ from eegnb.experiments.visual_n170 import n170
 from eegnb.analysis.utils import load_data
 
 # Define some variables
-board_name = 'muse'
+board_name = 'unicorn'
 # board_name = 'cyton'
 experiment = 'visual_n170'
 session = 999
 subject = 999 # a 'very British number'
-record_duration=120
+record_duration = 120
 
 # Initiate EEG device
 eeg_device = EEG(device=board_name)
