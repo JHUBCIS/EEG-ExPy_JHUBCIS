@@ -410,7 +410,7 @@ class EEG:
         elif self.backend == "muselsl":
             self._start_muse(duration)
     
-    def start_stream(self, fn, duration=None):
+    def start_stream(self, fn, duration=None): #JHUBCIS
         print("press 'q' to stop stream and save data")    
         self.save_fn = fn
 
@@ -432,7 +432,7 @@ class EEG:
                 if keyboard.is_pressed('q'):
                     print("stopping stream and saving data")
                     self._stop_brainflow()
-                    print(self.save_fn)
+                    print(self.save_fn) # JHUBCIS: modify output accordingly
                     break
 
         elif self.backend == "muselsl":
