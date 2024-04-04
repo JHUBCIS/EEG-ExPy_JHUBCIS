@@ -31,6 +31,10 @@ record_duration = 120
 # Start EEG device
 eeg_device = EEG(device=board_name)
 
+# while True:
+#     rec = eeg_device.get_recent()
+#     print(rec)
+
 # Create save file name
 save_fn = generate_save_fn(board_name, experiment, subject_id, session_nb)
 print(save_fn)
@@ -41,3 +45,5 @@ print(save_fn)
 #  
 ssvep = VisualSSVEP(duration=record_duration, eeg=eeg_device, save_fn=save_fn)
 ssvep.run()
+
+# eeg_device.stop()

@@ -26,6 +26,7 @@ from eegnb.devices.utils import (
     EEG_CHANNELS,
 )
 
+import keyboard
 
 logger = logging.getLogger(__name__)
 
@@ -335,7 +336,7 @@ class EEG:
         data_df = pd.DataFrame(total_data, columns=["timestamps"] + ch_names + ["stim"])
         data_df.to_csv(self.save_fn, index=False)
 
-    def _brainflow_extract(self, data):
+    def _brainflow_extract(self, data): 
         """
         Formats the data returned from brainflow to get
         ch_names; list of channel names
@@ -408,8 +409,35 @@ class EEG:
             self.markers = []
         elif self.backend == "muselsl":
             self._start_muse(duration)
+    
+    def start_stream(self, fn, duration=None):
+        print("press 'q' to stop stream and save data")    
+        self.save_fn = fn
 
-    def push_sample(self, marker, timestamp):
+        if self.backend == "brainflow":
+            self._start_brainflow()
+            self.markers = []
+            while True:
+                # get the latest data
+                data = self.board.get_current_board_data(1)
+
+                ch_names, eeg_data, timestamps = self._brainflow_extract(data)
+
+                eeg_data = np.array(eeg_data)
+                timestamps = np.array(timestamps)
+
+                df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
+                print (df)
+
+                if keyboard.is_pressed('q'):
+                    print("stopping stream and saving data")
+                    self._stop_brainflow()
+                    break
+
+        elif self.backend == "muselsl":
+            self._start_muse(duration)
+
+    def push_sample(self, marker, timestamp): # add code here to log in keyboard input
         """
         Universal method for pushing a marker and its timestamp to store alongside the EEG data.
 
