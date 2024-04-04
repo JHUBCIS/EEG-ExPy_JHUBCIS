@@ -432,6 +432,7 @@ class EEG:
                 if keyboard.is_pressed('q'):
                     print("stopping stream and saving data")
                     self._stop_brainflow()
+                    print(self.save_fn)
                     break
 
         elif self.backend == "muselsl":
