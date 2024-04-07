@@ -13,11 +13,14 @@ from multiprocessing import Process
 
 import numpy as np
 import pandas as pd
+import keyboard
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy
 
 from brainflow.board_shim import BoardShim, BoardIds, BrainFlowInputParams
 from muselsl import stream, list_muses, record, constants as mlsl_cnsts
 from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_byprop
 
+from eegnb.devices.eeg_rt_plot import EEGRealTimePlot
 from eegnb.devices.utils import (
     get_openbci_usb,
     create_stim_array,
@@ -25,8 +28,6 @@ from eegnb.devices.utils import (
     EEG_INDICES,
     EEG_CHANNELS,
 )
-
-import keyboard
 
 logger = logging.getLogger(__name__)
 
@@ -388,7 +389,7 @@ class EEG:
         timestamps = np.array(timestamps)
 
         df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
-        # print (df)
+
         return df
 
     #################################
@@ -410,34 +411,11 @@ class EEG:
         elif self.backend == "muselsl":
             self._start_muse(duration)
     
-    def start_stream(self, fn, duration=None): #JHUBCIS
-        print("press 'q' to stop stream and save data")    
-        self.save_fn = fn
 
-        if self.backend == "brainflow":
-            self._start_brainflow()
-            self.markers = []
-            while True:
-                # get the latest data
-                data = self.board.get_current_board_data(1)
-
-                ch_names, eeg_data, timestamps = self._brainflow_extract(data)
-
-                eeg_data = np.array(eeg_data)
-                timestamps = np.array(timestamps)
-
-                df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
-                print (df)
-
-                if keyboard.is_pressed('q'):
-                    print("stopping stream and saving data")
-                    self._stop_brainflow()
-                    print(self.save_fn) # JHUBCIS: modify output accordingly
-                    break
-
+        # muse backend, not applicable until we have muse
         elif self.backend == "muselsl":
             self._start_muse(duration)
-
+    
     def push_sample(self, marker, timestamp): # add code here to log in keyboard input
         """
         Universal method for pushing a marker and its timestamp to store alongside the EEG data.
@@ -478,3 +456,69 @@ class EEG:
         df = df[sorted_cols]
 
         return df
+    
+    ##############################################################
+    #   Unicorn functions by JHUBCIS for streaming and analysis  #
+    ##############################################################
+
+    # Stream unicorn input and prints in terminal. press `q` to quit and save data
+    def start_stream(self, fn, duration=None):
+        print("press 'q' to stop stream and save data")    
+        self.save_fn = fn
+
+        # brainflow backend, works with unicorn
+        if self.backend == "brainflow":
+            self._start_brainflow()
+            self.markers = []
+            running = True
+
+            while running:
+                # get the latest data
+                data = self.board.get_current_board_data(1)
+
+                ch_names, eeg_data, timestamps = self._brainflow_extract(data)
+
+                eeg_data = np.array(eeg_data)
+                timestamps = np.array(timestamps)
+
+                df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
+                print (df) # JHUBCIS: modify output accordingly
+
+                if keyboard.is_pressed('q'):
+                    print("stopping stream and saving data")
+                    self._stop_brainflow()
+                    print(self.save_fn) 
+                    running = not running
+    
+    def start_stream_plot(self, fn, n_samples = 100, duration=None):
+        print("press 'q' to stop stream and save data")    
+        self.save_fn = fn
+        print(self.sfreq,self.n_channels,self.channels) #test
+        app = QApplication(sys.argv)
+        ex = EEGRealTimePlot(self.sfreq, self.n_channels, self.channels)
+
+        if self.backend == "brainflow":
+            self._start_brainflow()
+            self.markers = []
+            running = True
+
+            while running:
+                # get the latest data
+                data = self.board.get_current_board_data(n_samples)
+                _ , eeg_data, timestamps = self._brainflow_extract(data)
+
+                eeg_data = np.array(eeg_data)
+                print(eeg_data.shape) #test
+                timestamps = np.array(timestamps)
+                ex.update_plot(eeg_data.T.tolist())
+
+                if keyboard.is_pressed('q'):
+                    print("stopping stream and saving data")
+                    self._stop_brainflow()
+                    print(self.save_fn) 
+                    running = not running
+                
+
+
+
+

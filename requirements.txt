@@ -58,3 +58,6 @@ recommonmark
 versioneer
 rst2pdf
 docutils
+
+# JHUBCIS requirements
+PyQT5
