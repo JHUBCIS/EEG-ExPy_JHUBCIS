@@ -60,4 +60,6 @@ rst2pdf
 docutils
 
 # JHUBCIS requirements
-PyQT5
+dash
+plotly
+# PyQT5
