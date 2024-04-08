@@ -10,17 +10,23 @@ import time
 import logging
 from time import sleep
 from multiprocessing import Process
+import threading 
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import keyboard
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy
+
+# from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy
 
 from brainflow.board_shim import BoardShim, BoardIds, BrainFlowInputParams
 from muselsl import stream, list_muses, record, constants as mlsl_cnsts
 from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_byprop
 
-from eegnb.devices.eeg_rt_plot import EEGRealTimePlot
+from eegnb.devices.rolling_buffer import RollingBuffer
+from eegnb.devices.eeg_rt_plot_mpl import EEGRealTimePlotMPL
+
+# from eegnb.devices.eeg_rt_plot import EEGRealTimePlot
 from eegnb.devices.utils import (
     get_openbci_usb,
     create_stim_array,
@@ -87,6 +93,8 @@ class EEG:
         self.n_channels = len(EEG_INDICES[self.device_name])
         self.sfreq = SAMPLE_FREQS[self.device_name]
         self.channels = EEG_CHANNELS[self.device_name]
+
+        self._stop_event = threading.Event() # used to stop threads
 
     def initialize_backend(self):
         if self.backend == "brainflow":
@@ -309,7 +317,7 @@ class EEG:
             # wait longer for openbci cyton / ganglion
             sleep(10)
         else:
-            sleep(5)
+            sleep(10) # also wait longer for unicorn
 
     def _stop_brainflow(self):
         """This functions kills the brainflow backend and saves the data to a CSV file."""
@@ -462,7 +470,7 @@ class EEG:
     ##############################################################
 
     # Stream unicorn input and prints in terminal. press `q` to quit and save data
-    def start_stream(self, fn, duration=None):
+    def stream(self, fn, duration=None):
         print("press 'q' to stop stream and save data")    
         self.save_fn = fn
 
@@ -490,35 +498,97 @@ class EEG:
                     print(self.save_fn) 
                     running = not running
     
-    def start_stream_plot(self, fn, n_samples = 100, duration=None):
+    # def start_stream_rolling(self, rolling_buffer: RollingBuffer):
+    #     # print("press 'q' to stop stream and save data")    
+    #     # self.save_fn = fn
+
+    #     # brainflow backend, works with unicorn
+    #     if self.backend == "brainflow":
+    #         self._start_brainflow()
+    #         # sleep(5) #sleep for another 5 seconds for the eeg data to come in
+    #         # self.markers = []
+    #         running = True
+
+    #         while running:
+    #             # get the latest data
+    #             data = self.board.get_current_board_data(1)
+
+    #             _, eeg_data, timestamps = self._brainflow_extract(data)
+
+    #             # eeg_data = np.array(eeg_data)
+    #             # timestamps = np.array(timestamps)
+    #             # rolling_buffer.update([eeg_data.tolist()], [timestamps.tolist()])
+    #             rolling_buffer.update(eeg_data, timestamps)
+
+    #             # df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
+    #             # print (df) # JHUBCIS: modify output accordingly
+
+    #             # if keyboard.is_pressed('q'):
+    #             #     print("stopping stream and saving data")
+    #             #     self._stop_brainflow()
+    #             #     print(self.save_fn) 
+    #             #     running = not running
+
+    def stream_plot(self, fn, buffer_time=5): 
         print("press 'q' to stop stream and save data")    
         self.save_fn = fn
-        print(self.sfreq,self.n_channels,self.channels) #test
-        app = QApplication(sys.argv)
-        ex = EEGRealTimePlot(self.sfreq, self.n_channels, self.channels)
 
+        sfreq = self.sfreq
+        channel_names = self.channels
+        num_channels = self.n_channels
+        print("channel names = ", channel_names, "\nsampling frequency = ", sfreq)
+
+        rolling_buffer = RollingBuffer(buffer_time, sfreq, num_channels)
+        if rolling_buffer:
+            print("rolling buffer initiated with buffer time of", buffer_time, "seconds")
+        
+        
+        plotter = EEGRealTimePlotMPL(rolling_buffer, channel_names)
+        
+        # brainflow backend, works with unicorn
         if self.backend == "brainflow":
             self._start_brainflow()
             self.markers = []
-            running = True
+            print("brainflow from unicorn started")
+        
+        # stop_event = Thread.Event()
 
-            while running:
-                # get the latest data
-                data = self.board.get_current_board_data(n_samples)
-                _ , eeg_data, timestamps = self._brainflow_extract(data)
+        def listen_for_q():
+            keyboard.wait('q')
+            self._stop_event.set()  # Signal the eeg_data_thread to stop
+            # plotter.stop_event.set() # Signal the plotter to stop
+            print("Stop brainflow")
+            self._stop_brainflow()
+            print("Data saved at:")
+            print(self.save_fn)
 
-                eeg_data = np.array(eeg_data)
-                print(eeg_data.shape) #test
-                timestamps = np.array(timestamps)
-                ex.update_plot(eeg_data.T.tolist())
+        def eeg_stream_thread(rolling_buffer):
+            while self.stream_started and not self._stop_event.is_set():
+                data = self.board.get_current_board_data(1)
+                _, eeg_data, timestamps = self._brainflow_extract(data)
+                if len(eeg_data) > 0 and len(timestamps) > 0: # only update buffer if neither is empty
+                    rolling_buffer.update(eeg_data, timestamps)
+                else:
+                    time.sleep(1)
+                    continue
+                if self._stop_event.is_set():
+                    # print("thread terminated")
+                    break
 
-                if keyboard.is_pressed('q'):
-                    print("stopping stream and saving data")
-                    self._stop_brainflow()
-                    print(self.save_fn) 
-                    running = not running
-                
+        q_thread = threading.Thread(target=listen_for_q)
+        q_thread.daemon = True
+        q_thread.start()
 
+        eeg_data_thread = threading.Thread(target=eeg_stream_thread, args=(rolling_buffer,))
+        eeg_data_thread.daemon = True
+        eeg_data_thread.start()
+        print("eeg_data_thread initiated")
+        
+        plotter.animate()
+
+        # make sure threads have finished before exiting stream_plot
+        q_thread.join()
+        eeg_data_thread.join()
 
 
 
