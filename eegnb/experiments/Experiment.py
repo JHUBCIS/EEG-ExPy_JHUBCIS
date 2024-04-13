@@ -162,6 +162,7 @@ class BaseExperiment:
         # Closing the EEG stream 
         if self.eeg:
             self.eeg.stop()
+            print("Recording saved at", self.save_fn)
 
         # Closing the window
         self.window.close()
