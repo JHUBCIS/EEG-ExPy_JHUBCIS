@@ -25,11 +25,12 @@ from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_byprop
 
 from eegnb.devices.rolling_buffer import RollingBuffer
 from eegnb.devices.eeg_rt_plot_mpl import EEGRealTimePlotMPL
+from eegnb.devices.EMA_Filters import EMA_Filters
 
-# from eegnb.devices.eeg_rt_plot import EEGRealTimePlot
 from eegnb.devices.utils import (
     get_openbci_usb,
     create_stim_array,
+    create_filt_array,
     SAMPLE_FREQS,
     EEG_INDICES,
     EEG_CHANNELS,
@@ -95,6 +96,7 @@ class EEG:
         self.channels = EEG_CHANNELS[self.device_name]
 
         self._stop_event = threading.Event() # used to stop threads
+        self.filt_data = [] # filtered data
 
     def initialize_backend(self):
         if self.backend == "brainflow":
@@ -469,7 +471,49 @@ class EEG:
     #   Unicorn functions by JHUBCIS for streaming and analysis  #
     ##############################################################
 
-    # Stream unicorn input and prints in terminal. press `q` to quit and save data
+
+    # def filt_eeg(self, eeg_data, bp_fc_high = 60, bp_fc_low = 1, n_fc = 60):
+    #     '''bandpass and notch filter eeg data, incomplete'''
+    #     sfreq = self.sfreq
+    #     emaFilt = EMA_Filters()
+    #     if emaFilt:
+    #         print("ema filter initiated: bandpass filter", bp_fc_low, "to", bp_fc_high, "Hz, notch filter at", n_fc, "Hz")
+        
+    #     if self.stream_started:
+    #         eeg_data_filt = emaFilt.BPF(eeg_data, bp_fc_low, bp_fc_high, sfreq) #bandpass filter
+    #         eeg_data_filt = emaFilt.Notch(eeg_data_filt, n_fc, sfreq) #notch filter
+
+
+    def _stop_brainflow_save_filt(self):
+        """This functions kills the brainflow backend and saves the raw and filtered data to a CSV file."""
+
+        # Collect session data and kill session
+        data = self.board.get_board_data()  # will clear board buffer
+        self.board.stop_stream()
+        self.board.release_session()
+
+        # Extract relevant metadata from board
+        ch_names, eeg_data, timestamps = self._brainflow_extract(data)
+
+        # Create a column for the stimuli to append to the EEG data
+        stim_array = create_stim_array(timestamps, self.markers)
+        filt_array = create_filt_array(timestamps, self.filt_data, self.n_channels)
+        timestamps = timestamps[..., None]
+
+        # Add an additional dimension so that shapes match
+        total_data = np.append(timestamps, eeg_data, 1)
+
+        total_data = np.append(total_data, filt_array, 1)
+
+        # Append the stim array to data.
+        total_data = np.append(total_data, stim_array, 1)
+
+        # Subtract five seconds of settling time from beginning
+        total_data = total_data[5 * self.sfreq :]
+        data_df = pd.DataFrame(total_data, columns=["timestamps"] + ch_names + [s + "_filt" for s in ch_names] + ["stim"])
+        data_df.to_csv(self.save_fn, index=False)
+
+    # Stream raw unicorn input and prints in terminal. press `q` to quit and save data
     def stream(self, fn, duration=None):
         print("press 'q' to stop stream and save data")    
         self.save_fn = fn
@@ -497,46 +541,20 @@ class EEG:
                     self._stop_brainflow()
                     print(self.save_fn) 
                     running = not running
-    
-    # def start_stream_rolling(self, rolling_buffer: RollingBuffer):
-    #     # print("press 'q' to stop stream and save data")    
-    #     # self.save_fn = fn
 
-    #     # brainflow backend, works with unicorn
-    #     if self.backend == "brainflow":
-    #         self._start_brainflow()
-    #         # sleep(5) #sleep for another 5 seconds for the eeg data to come in
-    #         # self.markers = []
-    #         running = True
-
-    #         while running:
-    #             # get the latest data
-    #             data = self.board.get_current_board_data(1)
-
-    #             _, eeg_data, timestamps = self._brainflow_extract(data)
-
-    #             # eeg_data = np.array(eeg_data)
-    #             # timestamps = np.array(timestamps)
-    #             # rolling_buffer.update([eeg_data.tolist()], [timestamps.tolist()])
-    #             rolling_buffer.update(eeg_data, timestamps)
-
-    #             # df = pd.DataFrame(eeg_data, index=timestamps, columns=ch_names)
-    #             # print (df) # JHUBCIS: modify output accordingly
-
-    #             # if keyboard.is_pressed('q'):
-    #             #     print("stopping stream and saving data")
-    #             #     self._stop_brainflow()
-    #             #     print(self.save_fn) 
-    #             #     running = not running
-
-    def stream_plot(self, fn, buffer_time=5): 
-        print("press 'q' to stop stream and save data")    
+    # streams band-passed & notch filtered unicorn output and plots in real-time. recorded data saved to SCV st the end.
+    def stream_plot(self, fn, buffer_time=5, bp_fc_high = 60, bp_fc_low = 1, n_fc = 60): 
+        print("first press 'q' to stop stream and save data, then close plot window to end program")    
         self.save_fn = fn
 
         sfreq = self.sfreq
         channel_names = self.channels
         num_channels = self.n_channels
         print("channel names = ", channel_names, "\nsampling frequency = ", sfreq)
+
+        emaFilt = EMA_Filters()
+        if emaFilt:
+            print("ema filter initiated: bandpass filter", bp_fc_low, "to", bp_fc_high, "Hz, notch filter at", n_fc, "Hz")
 
         rolling_buffer = RollingBuffer(buffer_time, sfreq, num_channels)
         if rolling_buffer:
@@ -551,29 +569,34 @@ class EEG:
             self.markers = []
             print("brainflow from unicorn started")
         
-        # stop_event = Thread.Event()
-
-        def listen_for_q():
-            keyboard.wait('q')
-            self._stop_event.set()  # Signal the eeg_data_thread to stop
-            # plotter.stop_event.set() # Signal the plotter to stop
-            print("Stop brainflow")
-            self._stop_brainflow()
-            print("Data saved at:")
-            print(self.save_fn)
-
+        # thread to stream filtered EEG data
         def eeg_stream_thread(rolling_buffer):
             while self.stream_started and not self._stop_event.is_set():
                 data = self.board.get_current_board_data(1)
                 _, eeg_data, timestamps = self._brainflow_extract(data)
+                eeg_data_filt = emaFilt.BPF(eeg_data, bp_fc_low, bp_fc_high, sfreq) #bandpass filter
+                eeg_data_filt = emaFilt.Notch(eeg_data_filt, n_fc, sfreq) #notch filter
                 if len(eeg_data) > 0 and len(timestamps) > 0: # only update buffer if neither is empty
-                    rolling_buffer.update(eeg_data, timestamps)
+                    rolling_buffer.update(eeg_data_filt, timestamps)
+                    last_timestamp = data[self.timestamp_channel][0]
+                    # print([eeg_data_filt[0].tolist(), last_timestamp])
+                    self.filt_data.append([eeg_data_filt[0].tolist(), last_timestamp])
                 else:
                     time.sleep(1)
                     continue
                 if self._stop_event.is_set():
                     # print("thread terminated")
                     break
+        # thread to end streaming
+        def listen_for_q():
+            keyboard.wait('q')
+            self._stop_event.set()  # Signal the eeg_data_thread to stop
+            print("Stop brainflow, saving raw and filtered data")
+            self._stop_brainflow_save_filt() #edit this line to save filtered data
+            # print(self.filt_data[-50:])
+            print("Data saved at:")
+            print(self.save_fn)
+        
 
         q_thread = threading.Thread(target=listen_for_q)
         q_thread.daemon = True

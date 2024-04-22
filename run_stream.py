@@ -19,5 +19,6 @@ eeg = EEG(device='unicorn')
 
 # start the stream
 # eeg.stream(save_fn)
-eeg.stream_plot(save_fn,buffer_time=15)
+eeg.stream_plot(save_fn,buffer_time=15, bp_fc_high = 60, bp_fc_low = 1, n_fc = 60)
+
 

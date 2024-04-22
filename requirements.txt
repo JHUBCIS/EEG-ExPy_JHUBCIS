@@ -62,4 +62,5 @@ docutils
 # JHUBCIS requirements
 dash
 plotly
+
 # PyQT5

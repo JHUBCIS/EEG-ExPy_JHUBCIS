@@ -26,7 +26,7 @@ class EEGRealTimePlotMPL:
 
         # Set the x-axis to handle date and time formatting
         self.axs[-1].xaxis_date()  # Treat the x-axis data as dates
-        self.axs[-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S:%f'))  # Format the dates as hours:minutes:seconds
+        self.axs[-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))  # Format the dates as hours:minutes:seconds
 
     def stream_check(self):
         data, timestamps = self.rolling_buffer.get_data()
@@ -78,18 +78,15 @@ class EEGRealTimePlotMPL:
             self.axs[i].autoscale()  # Rescale x and y axes
 
             # Hide x and y tick labels and ticks, but leave y-axis label (title) visible
-            self.axs[i].xaxis.set_tick_params(labelbottom=False)  # Hides x tick labels
-            self.axs[i].yaxis.set_tick_params(labelleft=False)  # Hides y tick labels
+            # self.axs[i].xaxis.set_tick_params(labelbottom=False)  # Hides x tick labels
+            # self.axs[i].yaxis.set_tick_params(labelleft=False)  # Hides y tick labels
 
             # Hide the ticks themselves
-            for tick in self.axs[i].xaxis.get_major_ticks() + self.axs[i].yaxis.get_major_ticks():
-                tick.tick1line.set_visible(False)
-                tick.tick2line.set_visible(False)
+            # for tick in self.axs[i].xaxis.get_major_ticks() + self.axs[i].yaxis.get_major_ticks():
+            #     tick.tick1line.set_visible(False)
+            #     tick.tick2line.set_visible(False)
 
-        # if self.stop_event.is_set():
-        #     plt.close(self.fig)
-
-        # self.fig.canvas.draw() # this significanly slows the plot, but allows showing x and y axes updating dynamically
+        self.fig.canvas.draw() # this significanly slows the plot, but allows showing x and y axes updating dynamically
         return self.lines
 
     def animate(self, win_len=20): # adjust win_len to set moving window size
