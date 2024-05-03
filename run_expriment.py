@@ -22,7 +22,7 @@ board_name = "unicorn" # board name
 experiment_name = "ssvep_select" # experiment name
 subject_id = 0 # test subject id
 session_nb = 0 # session number
-record_duration = 10  # recording duration in seconds
+record_duration = 120  # recording duration in seconds
 
 # generate save path
 save_fn = generate_save_fn(board_name, experiment_name, subject_id, session_nb)
