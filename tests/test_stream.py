@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from eegnb import generate_save_fn
-from eegnb.devices.eeg import EEG
+from ..eegnb import generate_save_fn
+from ..eegnb.devices.eeg import EEG
 # from eegnb.devices.eeg_rt_plot_mpl import EEGRealTimePlotMPL
 
 board_name = "unicorn"
