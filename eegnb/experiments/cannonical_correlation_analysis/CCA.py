@@ -5,12 +5,14 @@ from scipy.signal import sosfilt, butter
 from sklearn.cross_decomposition import CCA
 
 
-class EEGClassifier():
+class CCAClassifier():
 
-    def __init__(self, path, channels): 
+    def __init__(self, path, channel_names): 
         self.path = path
-        self.channels = channels
-        self.num_channels = len(channels)
+        self.channel_names = channel_names
+        self.num_channels = len(channel_names)
+
+        self.channels = self.load_data()[self.channel_names]
 
     # Load the data
     def load_data(self):
