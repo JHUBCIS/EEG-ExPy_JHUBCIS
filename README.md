@@ -30,7 +30,7 @@ To ensure the Unicorn Hybrid Black headset is connected and has good signal qual
 
 To connect for the first time, make sure to activate Unicron Suite using the lisence information provided with your Unicorn Hybrid Black headset. Go to *Unicorn Suite Hybrid Black > Lisences > Add Lisence* and enter the information.
 
-On how to use the Unicorn Suite software to establish connection, you may refer to the [Unicorn Suite Hybrid Black User Manual](https://github.com/unicorn-bi/Unicorn-Suite-Hybrid-Black-User-Manual) on Github or [UnicornSuite.pdf](.\UnicornSuite.pdf) in this repo. Note that the pdf is only the documentation for Unicorn Suite 1.18.00.
+On how to use the Unicorn Suite software to establish connection, you may refer to the [Unicorn Suite Hybrid Black User Manual](https://github.com/unicorn-bi/Unicorn-Suite-Hybrid-Black-User-Manual) on Github or [UnicornSuite.pdf](doc\UnicornSuite.pdf) in this repo. Note that the pdf is only the documentation for Unicorn Suite 1.18.00.
 
 However, we have noticed that not every step in the manual is necessary. Often the following steps would be sufficient:
 
