@@ -12,7 +12,7 @@ class CCAClassifier():
         self.channel_names = channel_names
         self.num_channels = len(channel_names)
 
-        self.channels = self.load_data()[self.channel_names]
+        self.full_channels = self.load_data()[self.channel_names]
 
     # Load the data
     def load_data(self):
@@ -28,7 +28,7 @@ class CCAClassifier():
         # Generate 5 value subsections of code
         for i in range(0, self.channels.shape[0], 5):
             if (i + 5 < self.channels.shape[0]):
-                segment = self.channels[i:i+5]
+                self.channels = self.full_channels[i:i+5]
                 seven_hz_scores, twenty_one_hz_scores = self.preprocess_segment()
                 #print("7hz scores: ", seven_hz_scores)
                 #print("21hz scores: ", twenty_one_hz_scores)
