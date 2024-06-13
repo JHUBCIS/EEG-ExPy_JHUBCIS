@@ -19,9 +19,29 @@ class CCAClassifier():
         data = pd.read_csv(self.path)
         data = data[self.channels]
         return data
+    
+    def process_data(self):
+
+        seven_hz_scores = []
+        twenty_one_hz_scores = []
+
+        # Generate 5 value subsections of code
+        for i in range(0, self.channels.shape[0], 5):
+            if (i + 5 < self.channels.shape[0]):
+                segment = self.channels[i:i+5]
+                seven_hz_scores, twenty_one_hz_scores = self.preprocess_segment()
+                print("7hz scores: ", seven_hz_scores)
+                print("21hz scores: ", twenty_one_hz_scores)
+
+                seven_hz_scores.append(seven_hz_scores)
+                twenty_one_hz_scores.append(twenty_one_hz_scores)
+
+        return seven_hz_scores, twenty_one_hz_scores
+
+        
 
     # Returns the 7hz and the 21hz scores
-    def preprocess_data(self):
+    def preprocess_segment(self):
 
         channel_signals = [self.channels[:,x] for x in range(1, self.num_channels + 1)]
 
