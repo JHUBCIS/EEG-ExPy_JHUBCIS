@@ -17,7 +17,7 @@ class CCAClassifier():
     # Load the data
     def load_data(self):
         data = pd.read_csv(self.path)
-        data = data[self.channels]
+        data = data[self.channel_names]
         return data
     
     def process_data(self):
@@ -30,8 +30,8 @@ class CCAClassifier():
             if (i + 5 < self.channels.shape[0]):
                 segment = self.channels[i:i+5]
                 seven_hz_scores, twenty_one_hz_scores = self.preprocess_segment()
-                print("7hz scores: ", seven_hz_scores)
-                print("21hz scores: ", twenty_one_hz_scores)
+                #print("7hz scores: ", seven_hz_scores)
+                #print("21hz scores: ", twenty_one_hz_scores)
 
                 seven_hz_scores.append(seven_hz_scores)
                 twenty_one_hz_scores.append(twenty_one_hz_scores)
