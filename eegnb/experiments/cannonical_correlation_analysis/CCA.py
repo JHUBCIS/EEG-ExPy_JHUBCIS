@@ -26,8 +26,8 @@ class CCAClassifier():
         twenty_one_hz_scores = []
 
         # Generate 5 value subsections of code
-        for i in range(0, self.channels.shape[0], 5):
-            if (i + 5 < self.channels.shape[0]):
+        for i in range(0, self.full_channels.shape[0], 5):
+            if (i + 5 < self.full_channels.shape[0]):
                 self.channels = self.full_channels[i:i+5]
                 seven_hz_scores, twenty_one_hz_scores = self.preprocess_segment()
                 #print("7hz scores: ", seven_hz_scores)
