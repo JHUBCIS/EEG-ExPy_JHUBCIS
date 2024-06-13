@@ -26,6 +26,9 @@ class CCAClassifier():
         data = data[self.channel_names]
         return data
     
+    def load_channel(self, channel_name):
+        return pd.read_csv(self.path)[channel_name]
+    
     def process_data(self):
 
         seven_hz_scores_list = []
@@ -68,9 +71,9 @@ class CCAClassifier():
         seven_hz_scores_list, twenty_one_hz_scores_list = self.process_data()
         predicted_score = self.get_treshold_preds(seven_hz_scores_list, twenty_one_hz_scores_list)
 
-        truth = self.load_data()[self.ground_truth_channel]
+        truth = self.load_channel(self.ground_truth_channel)
 
-        filter = truth == 1 or truth == 2
+        filter_7hz = truth == 1 or truth == 2
 
         ground_truth = self.full_channels[filter]
 
