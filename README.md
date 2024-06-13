@@ -1,6 +1,6 @@
 # EEG-ExPy_JHUBCIS
 
-See the original [EEG-ExPy](https://github.com/NeuroTechX/EEG-ExPy) Github page, the [NTX documentation](https://neurotechx.github.io/EEG-ExPy/) page, as well as the the `doc` directory in this repo for main documentations. This readme is compiled by JHUBCIS as an addition to the original documentation.
+See the original [EEG-ExPy](https://github.com/NeuroTechX/EEG-ExPy) Github page, the [NTX documentation](https://neurotechx.github.io/EEG-ExPy/) page, as well as the the [doc](./doc) directory in this repo for main documentations. This readme is compiled by JHUBCIS as an addition to the original documentation.
 
 ## Installation
 
