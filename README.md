@@ -100,4 +100,4 @@ experiment = VisualSSVEP_select_unicorn(duration=record_duration, freq1=7, freq2
 >    Once verified, the Unicorn Recorder should be able to pick up key presses.
 >    When proceeding to run actual experiment, make sure to stop `UDP_listener_test.ps1` by killing the terminal or other means so that the Unicorn Recorder can receive key presses.
 
-When the experiment is done, stop recording on Unicorn Recorder and [export the data as csv](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#recording-settings). Then use the [ssvep_select_unicorn-clean_data.ipynb](eegnb/experiments/visual_ssvep/ssvep_select_unicorn-clean_data.ipynb) to clean up the formatting.the [ssvep_select-clean_daa.ipynb](eegnb/experiments/visual_ssvep/ssvep_select-clean_data.ipynb) to clean up the formatting.
+When the experiment is done, stop recording on Unicorn Recorder and [export the data as csv](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#recording-settings). Then use the [ssvep_select_unicorn-clean_data.ipynb](eegnb/experiments/visual_ssvep/ssvep_select_unicorn-clean_data.ipynb) to clean up the formatting.
