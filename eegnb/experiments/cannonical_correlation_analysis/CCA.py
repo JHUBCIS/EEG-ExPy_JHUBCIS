@@ -71,14 +71,17 @@ class CCAClassifier():
         seven_hz_scores_list, twenty_one_hz_scores_list = self.process_data()
         predicted_score = self.get_treshold_preds(seven_hz_scores_list, twenty_one_hz_scores_list)
 
-        truth = self.load_channel(self.ground_truth_channel)
-
-        filter_7hz = truth == 1 or truth == 2
-
-        ground_truth = self.full_channels[filter]
+        ground_truth = self.load_channel(self.ground_truth_channel).to_numpy()
+        #print(type(truth))
+        #filterk = truth == 1 or truth == 2
+        
+        #ground_truth = self.full_channels[filterk]
 
         accuracy = 0
-
+        print(ground_truth)
+        print(predicted_score)
+        
+        print(str(np.ndarray(predicted_score).shape) + " " + str(ground_truth.shape))
         for val in zip(ground_truth, predicted_score):
             if (val[0] == 0):
                 continue
