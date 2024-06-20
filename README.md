@@ -54,8 +54,50 @@ First press 'q' to stop stream and save data, then close plot window to end prog
 
 ## Running the VisualSSVEP_select Experiment on Unicorn Hybrid Black
 
-Run the [run_experiment.py](./run_expriment.py) in the python virtual environment created for the repo. This is a template that can also be used to run other experiemnts, but is currently set to run the [VisualSSVEP_select](eegnb/experiments/visual_ssvep/ssvep_select.py) Experiment. You may specify `subject_id`, `session_nb`, and `record_duration` as you like.
+### Without Unicorn Recorder
+
+Run the [run_experiment.py](./run_expriment.py). This is a template that can also be used to run other experiemnts, but is currently set to run the [VisualSSVEP_select](eegnb/experiments/visual_ssvep/ssvep_select.py) Experiment. You may specify `subject_id`, `session_nb`, and `record_duration` as you like.
 
 The experiment collects filtered (bandpass and notch) EEG data while the subject may choose to focus their visual attention on one of the two visual stimuli is the left and right corners of the screen. You may specify the flashing frequency of the left and right stimuli with the `freq1` and `freq2` parameters respectively. See [Multi-frequency steady-state visual evoked potential dataset](https://www.nature.com/articles/s41597-023-02841-5) on how to choose these values.
 
 After the experiment is done, please use the [ssvep_select-clean_data.ipynb](eegnb/experiments/visual_ssvep/ssvep_select-clean_data.ipynb) to clean up the formatting.
+
+### With Unicorn Recorder
+
+Since Release 1.24, [Unicorn Recorder](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black) has included the [OSCAR](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#oscar) artifact removal algorithm, as well as a feature to [log triggers through UDP](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#receiving-triggers-via-udp).
+
+First make sure Unicorn Recorder is running and can stream data from the Unicorn headset. Then stop and start a new recording session. It is strongly suggested that all options be selected in [Acquisition settings](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#acquisition-settings) so that it is easier to clean up the output csv.
+
+Configure the IP address and port in the Run [run_experiment_unicorn.py](run_expriment_unicorn.py). Enter the corresponding IP address and UDP port number as parameters of the experiment. e.g.
+
+```python
+experiment = VisualSSVEP_select_unicorn(duration=record_duration, freq1=7, freq2=23, IP="127.0.0.1", Port=1000)
+```
+
+> In case there seems to be issues with UDP:
+>
+> 1. First make sure to add a rule in `Windows Defender Firewall with Advanced Security` to allow UDP traffic on the port of your choice. This can be done via GUI, or through command line run as administrator. e.g.
+>
+>    ```powershell
+>       netsh advfirewall firewall add rule name="Open UDP Port 1000" dir=in action=allow protocol=UDP localport=1000
+>    ```
+> 2. While the Unicorn Recorder is closed, try [UDP_listener_test.ps1](UDP_listener_test.ps1). This is a powershell script that sets up a UDP listener ofa UDP port (1000 by default). Run this script in powershell, then run the experiment. Try logging markers using left and right arrow keys, and if the UDP port is working, you should see output similar to the following:
+>
+>    ```powershell
+>       PS ~\Documents\GitHub\EEG-ExPy_JHUBCIS> .\UDP_listener_test.ps1
+>       Listening for UDP packets on port 1000...
+>       Received data: 1 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>       Received data: 2 from 127.0.0.1:57848
+>    ```
+>
+>    Once verified, the Unicorn Recorder should be able to pick up key presses.
+>    When proceeding to run actual experiment, make sure to stop `UDP_listener_test.ps1` by killing the terminal or other means so that the Unicorn Recorder can receive key presses.
+
+When the experiment is done, stop recording on Unicorn Recorder and [export the data as csv](https://github.com/unicorn-bi/Unicorn-Recorder-Hybrid-Black?tab=readme-ov-file#recording-settings). Then use the [ssvep_select_unicorn-clean_data.ipynb](eegnb/experiments/visual_ssvep/ssvep_select_unicorn-clean_data.ipynb) to clean up the formatting.the [ssvep_select-clean_daa.ipynb](eegnb/experiments/visual_ssvep/ssvep_select-clean_data.ipynb) to clean up the formatting.
