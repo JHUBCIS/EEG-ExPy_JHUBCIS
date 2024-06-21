@@ -30,7 +30,7 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
 
     EEG Data streamed and recorded through the Unicorn Recorder
     '''
-    def __init__(self, duration, freq1 = 7, freq2 = 23, IP = "127.0.0.1", Port = 1000): #1 for left, 2 for right
+    def __init__(self, duration, freq1 = 7, freq2 = 23, IP = "127.0.0.1", Port = 800): #1 for left, 2 for right
       
         exp_name = "Visual SSVEP"
         super().__init__(exp_name, duration, eeg = None, save_fn = None, n_trials = None, iti = None, soa = None, jitter = None)
