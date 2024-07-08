@@ -51,7 +51,7 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         pattern[1::2, 1::2] *= -1
         pos1 = [-18, -8]
         pos2 = [18, -8]
-        size = 5
+        size = 6
         self._stim1 = visual.RadialStim(win=self.window, tex=pattern, pos=pos1,
                                         size=size, radialCycles=2, texRes=256, opacity=1)  
         self._stim1_neg = visual.RadialStim(win=self.window, tex=pattern*(-1), pos=pos1,
