@@ -34,7 +34,20 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
       
         exp_name = "Visual SSVEP"
         super().__init__(exp_name, duration, eeg = None, save_fn = None, n_trials = None, iti = None, soa = None, jitter = None)
-        self.instruction_text = """\nWelcome to the {} experiment!\n\nWhen stimuli are presented, use left/right arrow to indicate which stimulus you are looking at.\nPlease pause a bit between selections.\n\nThis experiment will run for %s seconds.\nPress spacebar to start, press again to interrupt. \n""".format(self.exp_name)
+        # self.instruction_text = """\n
+        # Welcome to the {} experiment!\n\n
+        # When stimuli are presented, use left/right arrow to indicate which stimulus you are looking at.\n
+        # Please pause a bit between selections.\n\n
+        # This experiment will run for %s seconds.\n
+        # Press spacebar to start, press again to interrupt. \n""".format(self.exp_name)
+        self.instruction_text = (
+            "\n"
+            "Welcome to the {} experiment!\n\n"
+            "When stimuli are presented, use the left/right arrow to indicate which stimulus you are looking at.\n"
+            "Please pause a bit between selections.\n\n"
+            "This experiment will run for %s seconds.\n"
+            "Press spacebar to start, press again to interrupt.\n"
+        ).format(self.exp_name)
         self.freq1 = freq1
         self.freq2 = freq2
         # self.bp_fc_high = bp_fc_high
@@ -47,11 +60,11 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
     def load_stimulus(self):
         
         pattern = np.ones((4, 4))
-        pattern[::2, ::2] *= -1
-        pattern[1::2, 1::2] *= -1
+        # pattern[::2, ::2] *= -1
+        # pattern[1::2, 1::2] *= -1
         pos1 = [-18, -8]
         pos2 = [18, -8]
-        size = 6
+        size = 8
         self._stim1 = visual.RadialStim(win=self.window, tex=pattern, pos=pos1,
                                         size=size, radialCycles=2, texRes=256, opacity=1)  
         self._stim1_neg = visual.RadialStim(win=self.window, tex=pattern*(-1), pos=pos1,
@@ -60,6 +73,7 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
                                         size=size, radialCycles=1, texRes=256, opacity=1)
         self._stim2_neg = visual.RadialStim(win=self.window, tex=pattern*(-1), pos=pos2,
                                         size=size, radialCycles=1, texRes=256, opacity=1)
+                                        
         fixation = visual.GratingStim(win=self.window, size=0.2, pos=[0, 8], sf=0.2, color=[1, 0, 0], autoDraw=True)
 
     def present_stimulus(self):
@@ -96,19 +110,29 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         self._stim2_neg.setAutoDraw(False)
 
         while self.running and (time()-start_time) <= self.record_duration:
-            current_time = time()
-            if current_time >= next_flip_time_1:
-                self._stim1.setAutoDraw(not self._stim1.autoDraw)  # Toggle visibility
-                self._stim1_neg.setAutoDraw(not self._stim1_neg.autoDraw)  # Toggle visibility
-                # self.window.flip()
-                next_flip_time_1 += cycle_duration_1
+            trial_start_time = time()
+            while self.running and time() < (trial_start_time + 10): # present for 10 seconds
+                current_time = time()
+                if current_time >= next_flip_time_1:
+                    self._stim1.setAutoDraw(not self._stim1.autoDraw)  # Toggle visibility
+                    self._stim1_neg.setAutoDraw(not self._stim1_neg.autoDraw)  # Toggle visibility
+                    # self.window.flip()
+                    next_flip_time_1 += cycle_duration_1
 
-            if current_time >= next_flip_time_2:
-                self._stim2.setAutoDraw(not self._stim2.autoDraw)  # Toggle visibility
-                self._stim2_neg.setAutoDraw(not self._stim2_neg.autoDraw)  # Toggle visibility
-                # self.window.flip()
-                next_flip_time_2 += cycle_duration_2
+                if current_time >= next_flip_time_2:
+                    self._stim2.setAutoDraw(not self._stim2.autoDraw)  # Toggle visibility
+                    self._stim2_neg.setAutoDraw(not self._stim2_neg.autoDraw)  # Toggle visibility
+                    # self.window.flip()
+                    next_flip_time_2 += cycle_duration_2
+                self.window.flip()
+
+            self._stim1.setAutoDraw(False)
+            self._stim1_neg.setAutoDraw(True)
+            self._stim2.setAutoDraw(False)
+            self._stim2_neg.setAutoDraw(True)
             self.window.flip()
+
+            core.wait(5) # wait for 5 seconds
 
         self._stim1.setAutoDraw(False)
         self._stim1_neg.setAutoDraw(False)
@@ -130,6 +154,8 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
 
             # Setting up Graphics 
             self.window = visual.Window([1536, 864], monitor="testMonitor", units="deg", fullscr=True) 
+            self.window.color = 'black' # set background color to black
+            self.window.flip()
             
             # Loading the stimulus from the specific experiment, throws an error if not overwritten in the specific experiment
             self.stim = self.load_stimulus()

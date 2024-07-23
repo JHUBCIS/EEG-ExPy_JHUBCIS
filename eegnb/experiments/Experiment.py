@@ -34,8 +34,13 @@ class BaseExperiment:
         """ Initializer for the Base Experiment Class """
 
         self.exp_name = exp_name
-        self.instruction_text = """\nWelcome to the {} experiment!\nStay still, focus on the centre of the screen, and try not to blink. \nThis block will run for %s seconds.\n
+        
+        self.instruction_text = """\n
+        Welcome to the {} experiment!\n
+        Stay still, focus on the centre of the screen, and try not to blink. \n
+        This block will run for %s seconds.\n
         Press spacebar to continue. \n""".format(self.exp_name)
+
         self.duration = duration
         self.eeg = eeg
         self.save_fn = save_fn
@@ -106,14 +111,19 @@ class BaseExperiment:
         No parameters accepted, can be skipped through passing a False while running the Experiment
         """
 
-        # Splitting instruction text into lines
+        # insert duration into instruction text
         self.instruction_text = self.instruction_text % self.duration
 
         # Disabling the cursor during display of instructions
         self.window.mouseVisible = False
 
         # Displaying the instructions on the screen
-        text = visual.TextStim(win=self.window, text=self.instruction_text, color=[-1, -1, -1])
+        # text = visual.TextStim(win=self.window, text=self.instruction_text, color=[-1, -1, -1])
+        text = visual.TextStim(win=self.window, text=self.instruction_text, color='white')
+        # text.pos = (0,0) #centered
+        text.wrapWidth = 30
+        text.alignHoriz = 'center'
+        text.alignVert = 'bottom'
         text.draw()
         self.window.flip()
         
