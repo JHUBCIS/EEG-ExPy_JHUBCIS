@@ -20,8 +20,8 @@ def main():
     trials_per_block = 5    # Number of total trials = n_blocks * trials_per_block
     target_pos = [(-.8, 0), (.8, 0)]  # Positions of left and right targets
     hints = [u'\u2190', u'\u2192']  # Left arrow, Right arrow
-    freqs = [12, 5] # Hz
-    scr_rate = 60 # laptop screen refresh rate
+    freqs = [9, 16] # Hz
+    scr_rate = 144 # laptop screen refresh rate
     fr_rates = [scr_rate / freq for freq in freqs]
 
     # exp_device = explorepy.Explore()

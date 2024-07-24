@@ -29,8 +29,8 @@ class CheckerBoard:
         self._fr_rate = n_frame
         self._fr_counter = n_frame
         pattern = np.ones((4, 4))
-        pattern[::2, ::2] *= -1
-        pattern[1::2, 1::2] *= -1
+        # pattern[::2, ::2] *= -1
+        # pattern[1::2, 1::2] *= -1
         self._stim1 = visual.RadialStim(win=self._window, tex=pattern, pos=position,
                                         size=size, radialCycles=1, texRes=256, opacity=1)
         self._stim2 = visual.RadialStim(win=self._window, tex=pattern*-1, pos=position,
@@ -219,8 +219,11 @@ class SSVEPExperiment:
 
     def _init_vis(self):
         self.win = visual.Window([800, 600], monitor="testMonitor",
-                                 fullscr=True, screen=1, units="norm", color=[0.1, 0.1, 0.1])
+                                 fullscr=True, screen=1, units="norm", color='black')
+        # self.win = visual.Window([800, 600], monitor="testMonitor",
+        #                          fullscr=True, screen=1, units="norm", color=[0.1, 0.1, 0.1])
         self.win.recordFrameIntervals = True
+        self.win.flip()
         stim_size = (.6 * self.win.size[1] / self.win.size[0], .6)
         for i in range(len(self._fr_rates)):
             self.targets.append(CheckerBoard(window=self.win,
@@ -229,11 +232,17 @@ class SSVEPExperiment:
                                              position=self._positions[i],
                                              log_time=True))
             self._hint_stim.append(visual.TextStim(win=self.win, pos=[0, 0], text=self._hints[i],
-                                                   color=(-1, -1, -1), height=.15,
+                                                   color='white', height=.15,
                                                    colorSpace='rgb', bold=True))
+            # self._hint_stim.append(visual.TextStim(win=self.win, pos=[0, 0], text=self._hints[i],
+            #                                        color=(-1, -1, -1), height=.15,
+            #                                        colorSpace='rgb', bold=True))
         self._block_start_stim = visual.TextStim(win=self.win, pos=[0, 0], text="Press space to continue",
-                                                 color=(-1, -1, -1), height=.2,
+                                                 color='white', height=.2,
                                                  colorSpace='rgb', bold=True)
+        # self._block_start_stim = visual.TextStim(win=self.win, pos=[0, 0], text="Press space to continue",
+        #                                          color=(-1, -1, -1), height=.2,
+        #                                          colorSpace='rgb', bold=True)
 
     def run(self):
         """Run the experiment
