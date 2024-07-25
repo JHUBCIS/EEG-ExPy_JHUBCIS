@@ -35,8 +35,8 @@ record_duration = 500  # recording duration in seconds
 # Experiment type
 # experiment = VisualSSVEP(duration=record_duration, eeg=eeg_device, save_fn=save_fn)
 '''for more details on which frequencies to select, see https://www.nature.com/articles/s41597-023-02841-5'''
-# experiment = VisualSSVEP_select_unicorn(duration=record_duration, freq1=9.75, freq2=14.25, IP="127.0.0.1", Port=800) #note that most laptops only support up to 60 Hz. don't go above that
-experiment = VisualSSVEP_select_unicorn_emg_ortho(duration=record_duration, freq1=9.75, freq2=14.25, IP="127.0.0.1", Port=800) #note that most laptops only support up to 60 Hz. don't go above that
+experiment = VisualSSVEP_select_unicorn(duration=record_duration, freq1=9.75, freq2=14.25, IP="127.0.0.1", Port=1000) #note that most laptops only support up to 60 Hz. don't go above that
+# experiment = VisualSSVEP_select_unicorn_emg_ortho(duration=record_duration, freq1=9.75, freq2=14.25, IP="127.0.0.1", Port=800) #note that most laptops only support up to 60 Hz. don't go above that
 
 ###################################################################################################  
 # Run experiment

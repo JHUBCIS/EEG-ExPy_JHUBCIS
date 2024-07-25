@@ -104,11 +104,6 @@ class VisualSSVEP_select_unicorn_emg_ortho(Experiment.BaseExperiment):
         next_flip_time_1 = start_time + cycle_duration_1
         next_flip_time_2 = start_time + cycle_duration_2
 
-        self._stim1.setAutoDraw(True)
-        self._stim1_neg.setAutoDraw(False)
-        self._stim2.setAutoDraw(True)
-        self._stim2_neg.setAutoDraw(False)
-        
         emg_prompt = visual.TextStim(
             self.window, 
             text=(
@@ -129,9 +124,14 @@ class VisualSSVEP_select_unicorn_emg_ortho(Experiment.BaseExperiment):
             wrapWidth=30,
             alignText='center',
             color='white')
+        
+        self._stim1.setAutoDraw(True)
+        self._stim1_neg.setAutoDraw(False)
+        self._stim2.setAutoDraw(True)
+        self._stim2_neg.setAutoDraw(False)
 
         while self.running and (time()-start_time) <= self.record_duration:
-            # present eeg for 15 seconds
+            # present SSVEP for 10 seconds
             eeg_trial_start_time = time()
             while self.running and time() < (eeg_trial_start_time + 10): 
                 current_time = time()

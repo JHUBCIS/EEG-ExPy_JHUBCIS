@@ -104,14 +104,25 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         next_flip_time_1 = start_time + cycle_duration_1
         next_flip_time_2 = start_time + cycle_duration_2
 
+        pause_prompt = visual.TextStim(
+            self.window, 
+            text=(
+                "Stop generating data\n"
+                "Prepare for next trial\n"
+                ), 
+            wrapWidth=30,
+            alignText='center',
+            color='white')
+        
         self._stim1.setAutoDraw(True)
         self._stim1_neg.setAutoDraw(False)
         self._stim2.setAutoDraw(True)
         self._stim2_neg.setAutoDraw(False)
 
         while self.running and (time()-start_time) <= self.record_duration:
+            # present SSVEP for 20 seconds
             trial_start_time = time()
-            while self.running and time() < (trial_start_time + 10): # present for 10 seconds
+            while self.running and time() < (trial_start_time + 20): 
                 current_time = time()
                 if current_time >= next_flip_time_1:
                     self._stim1.setAutoDraw(not self._stim1.autoDraw)  # Toggle visibility
@@ -126,13 +137,19 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
                     next_flip_time_2 += cycle_duration_2
                 self.window.flip()
 
+            # pause for 5 seconds
+            pause_start_time = time()
+            while self.running and time() < (pause_start_time + 5): # pause for 5 seconds
+                pause_prompt.draw()
+                self.window.flip()
+
             self._stim1.setAutoDraw(False)
             self._stim1_neg.setAutoDraw(True)
             self._stim2.setAutoDraw(False)
             self._stim2_neg.setAutoDraw(True)
             self.window.flip()
 
-            core.wait(5) # wait for 5 seconds
+            # core.wait(5) # wait for 5 seconds
 
         self._stim1.setAutoDraw(False)
         self._stim1_neg.setAutoDraw(False)
