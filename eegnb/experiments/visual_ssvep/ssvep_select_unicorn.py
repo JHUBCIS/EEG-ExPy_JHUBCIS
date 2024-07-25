@@ -136,6 +136,12 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
                     # self.window.flip()
                     next_flip_time_2 += cycle_duration_2
                 self.window.flip()
+            
+            self._stim1.setAutoDraw(False)
+            self._stim1_neg.setAutoDraw(True)
+            self._stim2.setAutoDraw(False)
+            self._stim2_neg.setAutoDraw(True)
+            self.window.flip()
 
             # pause for 5 seconds
             pause_start_time = time()
@@ -143,11 +149,6 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
                 pause_prompt.draw()
                 self.window.flip()
 
-            self._stim1.setAutoDraw(False)
-            self._stim1_neg.setAutoDraw(True)
-            self._stim2.setAutoDraw(False)
-            self._stim2_neg.setAutoDraw(True)
-            self.window.flip()
 
             # core.wait(5) # wait for 5 seconds
 
