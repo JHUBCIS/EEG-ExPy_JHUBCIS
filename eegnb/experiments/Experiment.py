@@ -122,16 +122,15 @@ class BaseExperiment:
         text = visual.TextStim(win=self.window, text=self.instruction_text, color='white')
         # text.pos = (0,0) #centered
         text.wrapWidth = 30
-        text.alignHoriz = 'center'
-        text.alignVert = 'bottom'
+        text.alignText = 'center'
         text.draw()
         self.window.flip()
         
         # Waiting for the user to press the spacebar to start the experiment
         event.waitKeys(keyList="space")
 
-        # Enabling the cursor again
-        self.window.mouseVisible = True
+        # # Enabling the cursor again
+        # self.window.mouseVisible = True
        
     def run(self, instructions=True):
         """ Do the present operation for a bunch of experiments """
