@@ -62,8 +62,8 @@ class VisualSSVEP_select_unicorn_emg_ortho(Experiment.BaseExperiment):
         pattern = np.ones((4, 4))
         # pattern[::2, ::2] *= -1
         # pattern[1::2, 1::2] *= -1
-        pos1 = [-18, -8]
-        pos2 = [18, -8]
+        pos1 = [-14, -4]
+        pos2 = [14, -4]
         size = 8
         self._stim1 = visual.RadialStim(win=self.window, tex=pattern, pos=pos1,
                                         size=size, radialCycles=2, texRes=256, opacity=1)  
@@ -82,7 +82,7 @@ class VisualSSVEP_select_unicorn_emg_ortho(Experiment.BaseExperiment):
     
         def log_key_input():
             def on_key_event(event):
-                if event.name == 'left' or event.name == 'right':
+                if event.name == 'a' or event.name == 's':
                     marker = b"1" if event.name == 'left' else b"2" 
                     # print("Marker logged:", marker)
                     # timestamp = time()
