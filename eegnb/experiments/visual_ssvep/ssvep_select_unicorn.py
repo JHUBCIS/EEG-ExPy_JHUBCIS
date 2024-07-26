@@ -83,7 +83,7 @@ class VisualSSVEP_select_unicorn(Experiment.BaseExperiment):
         def log_key_input():
             def on_key_event(event):
                 if event.name == 'a' or event.name == 's':
-                    marker = b"1" if event.name == 'left' else b"2" 
+                    marker = b"1" if event.name == 'a' else b"2" 
                     # print("Marker logged:", marker)
                     # timestamp = time()
                     self.socket.sendto(marker, self.endPoint)
