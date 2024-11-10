@@ -21,13 +21,11 @@ def classify_cca(self, twod_array_to_classify : np.array) -> int:
     band_pass_filtered = [mne.filter.filter_data(x, 250, 0.5, 50) for x in twod_array_to_classify]
 
     # Lambda: Apply notch filter
-    notch_filtered = [mne.filter.notch_filter(x, 250, (60)) for x in band_pass_filtered]
+    notch_filtered_channels = [mne.filter.notch_filter(x, 250, (60)) for x in band_pass_filtered]         
 
-    for channel in notch_filtered:
-         if len(channel) < int(self.fs*self.tmax):
-            continue
+    shortened_channels = [channel[:self.fs*self.tmax] for channel in notch_filtered_channels if not len(channel) < int(self.fs*self.tmax)]
     
-    score = self.cca_classifier.apply_cca(np.array([twod_array_to_classify]))
+    score = self.cca_classifier.apply_cca(np.array(shortened_channels))
 
     return score
 
