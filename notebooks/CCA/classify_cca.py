@@ -15,19 +15,21 @@ class CCAClassifier:
         self.cca_classifier = CCAAnalysis(freqs=self.event_freq, win_len=self.tmax, s_rate=self.fs, n_harmonics=2)
 
 
-def classify_cca(self, twod_array_to_classify : np.array) -> int:
+    def classify_cca(self, twod_array_to_classify : np.array) -> int:
 
-    # Lambda: Apply bandpass filter
-    band_pass_filtered = [mne.filter.filter_data(x, 250, 0.5, 50) for x in twod_array_to_classify]
+        # Lambda: Apply bandpass filter
+        band_pass_filtered = [mne.filter.filter_data(x, 250, 0.5, 50) for x in twod_array_to_classify]
 
-    # Lambda: Apply notch filter
-    notch_filtered_channels = [mne.filter.notch_filter(x, 250, (60)) for x in band_pass_filtered]         
+        # Lambda: Apply notch filter
+        notch_filtered_channels = [mne.filter.notch_filter(x, 250, (60)) for x in band_pass_filtered]         
 
-    shortened_channels = [channel[:self.fs*self.tmax] for channel in notch_filtered_channels if not len(channel) < int(self.fs*self.tmax)]
-    
-    score = self.cca_classifier.apply_cca(np.array(shortened_channels))
+        # Lambda: Shrink channels to requried size
+        shortened_channels = [channel[:self.fs*self.tmax] for channel in notch_filtered_channels if not len(channel) < int(self.fs*self.tmax)]
+        
+        # Compute score
+        score = self.cca_classifier.apply_cca(np.array(shortened_channels))
 
-    return score
+        return score
 
 class CCAAnalysis:
     """Canonical Correlation Analysis for SSVEP paradigm"""
